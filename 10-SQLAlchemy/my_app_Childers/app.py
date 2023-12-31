@@ -42,13 +42,14 @@ def welcome():
         f"<h1>Welcome to Hawaii's Best Climate API!<h1><br/>"
         f"<h3>Available Routes:</h3><br/>"
         f"<a href='/api/v1.0/precipitation' target='_blank'>/api/v1.0/percipitation,/a>"
+        f"<a href='/api/v1.0/stations' target='_blank'>/api/v1.0/stations,/a>"
     )
 
 @app.route("/api/v1.0/percipitation")
 def precipitation():
     """Return the precipitation data as json"""
 
-    #query = """ SELECT
+    query = """ SELECT
                     date,
                     station,
                     prcp
@@ -58,17 +59,38 @@ def precipitation():
                     date >= '2016-08-23';
 """
 
-    #df = pd.read_sql(text(query), con=engine)
-    db = session.query(Measurement.date, Measurement.station, Measurement.prcp)where(Measurement.date >= '2016-08-23').all()
-    df_2 = pd.Dataframe(db, columns=["date", "station", "prcp"])
+    df = pd.read_sql(text(query), con=engine)
+    data = df.to_dict(orient="records")
+    return jsonify(db)
 
-    data = df_2.to_dict(orient="records")
+@app.route("/api/v1.0/percipitation")
+def stations():
+      query = """ SELECT
+                   *
+                FROM
+                    station;
+"""
 
+    df = pd.read_sql(text(query), con=engine)
+    data = df.to_dict(orient="records")
+    return jsonify(db)
+
+@app.route("/api/v1.0/<start>")
+def startDate(start):
+      query = f""" SELECT
+                   min(tobs) as min_temp,
+                   max(tobs) as max_temp,
+                   avg(tobs) as avg_temp
+                FROM
+                    measurements
+                WHERE
+                    date >= '{start}';
+"""
+
+    df = pd.read_sql(text(query), con=engine)
+    data = df.to_dict(orient="records")
     return jsonify(db)
     
-
-
-
 #################################################
 # Application Execution
 #################################################
