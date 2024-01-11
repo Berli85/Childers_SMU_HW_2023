@@ -1,9 +1,8 @@
 #################################################
 # Import the dependencies
 #################################################
-
-import datetime as dt
 import numpy as np
+import datetime as dt
 
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -40,15 +39,14 @@ app = Flask(__name__)
 #################################################
 # Flask Routes
 #################################################
-
 @app.route("/")
 def welcome():
     return (
         f"Welcome to Hawaii's Climate Analysis<br/>"
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
-        f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
+        f"/api/v1.0/stations<br/>"
         f"/api/v1.0/temp/start<br/>"
         f"/api/v1.0/temp/start/end<br/>"
         f"<p>'start' and 'end' date should be in the format MMDDYYYY.</p>"
@@ -68,8 +66,8 @@ def precipitation():
     session.close()
 
     # dictionary made with date as the key and prcp as the value
-    precip = {date: prcp for date, prcp in precipitation}
-    return jsonify(precip)
+    precip_1 = {date: prcp for date, prcp in precipitation}
+    return jsonify(precip_1)
 
 @app.route("/api/v1.0/tobs")
 def monthly_temp():
@@ -82,6 +80,14 @@ def monthly_temp():
         filter(Measurement.station == 'USC00519281').\
         filter(Measurement.date >= prev_year).all()
     
+    session.close()
+    
+    # results in 1D array and convert to listt
+    temps = list(np.ravel(results))
+    
+    # Return results
+    return jsonify(temps=temps)
+    
 @app.route("/api/v1.0/stations")
 def stations():
     """Stations."""
@@ -93,13 +99,7 @@ def stations():
     stations = list(np.ravel(results))
     return jsonify(stations=stations)
 
-    session.close()
-    
-    # results in 1D array and convert to listt
-    temps = list(np.ravel(results))
-
-    # Return results
-    return jsonify(temps=temps)
+  
 
 
 @app.route("/api/v1.0/temp/<start>")
